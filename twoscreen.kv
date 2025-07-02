@@ -1,0 +1,178 @@
+# twoscreen.kv
+# This file defines the UI structure for the Kivy application.
+#:import Graph kivy_garden.graph
+
+# background color Template
+<BackgroundColor@Widget>
+    background_color: 1, 1, 1, 1
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+#  Mix the `BackgroundColor` class with label
+<BackgroundLabel@Label+BackgroundColor>
+    background_color: 0, 0, 0, 0
+
+# Define the custom GraphWithTitle widget
+<GraphWithTitle@BoxLayout>: # Inherit from BoxLayout
+    title: '' # Define the title property
+    graph_id: '' # Define the graph_id property for the inner Graph
+    
+    orientation: 'horizontal'
+    padding: 5
+    spacing: 5
+    # size_hint_y is set when using this widget, not here.
+    # The internal BoxLayout (root of this rule) should fill the space of GraphWithTitle
+    size_hint_y: 1 # This BoxLayout should fill the height of its parent (GraphWithTitle)
+
+    BackgroundLabel:
+        text: root.title # Use the title property of GraphWithTitle
+        text_size: self.width, None
+        halign: 'center'
+        valign: 'center'
+        size_hint_x: 0.1
+        bold: True
+        background_color: 0.2, 0.2, 0.35, 1
+    Graph:
+        id: root.ids[root.graph_id] if root.graph_id else None # Dynamically assign ID based on graph_id property
+        size_hint_x: 0.8
+        xlabel: 'Time (s)'
+        ylabel: 'Amplitude'
+        x_grid: False
+        y_grid: False
+        x_grid_label: True
+        y_grid_label: True
+        padding: '5dp'
+        x_ticks_major: 1
+        y_ticks_major: 0.1
+        xmin: 0
+        xmax: 15
+        ymin: -1
+        ymax: 1
+        background_color: (0.1, 0.1, 0.1, 1) # Dark background for the graph
+
+# Define the WaitingForConnectionView (First Screen)
+<WaitingForConnectionView>:
+    # The root widget of the screen is a BoxLayout
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 50
+        spacing: 20
+        
+        Label:
+            id: message_label # Assign an ID to reference this label from Python
+            text: "Connecting to device..."
+            font_size: '36sp'
+            bold: True
+            color: (0.1, 0.5, 0.8, 1)
+            size_hint_y: None
+            height: 80
+        
+        # Add the custom SpinningCirclesLoader directly by its class name
+        # Kivy's Factory will find it because it's in the main application module
+        SpinningCirclesLoader:
+            id: spinner
+            opacity: 0 # Start invisible, Python will control visibility
+            # The width and pos_hint are already set in the Python class
+            # But you could override them here if needed:
+            # size_hint_x: None
+            # width: self.NUM_CIRCLES * self.CIRCLE_WIDTH + (self.NUM_CIRCLES - 1) * self.SPACING
+            # pos_hint: {'center_x': 0.5}
+
+        Button:
+            id: continue_button # Assign an ID to reference this button from Python
+            text: "Continue"
+            font_size: '24sp'
+            size_hint: (0.5, 0.2)
+            pos_hint: {'center_x': 0.5}
+            background_normal: ''
+            background_color: (0.2, 0.6, 0.9, 1)
+            color: (1, 1, 1, 1)
+            markup: True
+            # Bind the button press to the method in the Python class
+            on_press: root.transition_to_second_screen(2) # Call method on the screen instance
+
+# Define the SecondScreen
+<SecondScreen>:
+    BoxLayout:
+        orientation: 'horizontal'
+        
+        # --- Sidebar Section ---
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: 0.3
+            padding: 10
+            spacing: 10
+            
+            Label:
+                text: "Sidebar Menu"
+                font_size: '24sp'
+                bold: True
+                color: (0.1, 0.4, 0.6, 1)
+            
+            ScrollView:
+                size_hint: (1, 1)
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None # Important for ScrollView content
+                    height: self.minimum_height # Important for ScrollView content
+                    spacing: 10
+                    
+                    # Loop to create menu items
+                    Button:
+                        text: "Menu Item 1"
+                        size_hint_y: None
+                        height: 40
+                        background_color: (0.3, 0.7, 0.9, 1)
+                        color: (1,1,1,1)
+                    Button:
+                        text: "Menu Item 2"
+                        size_hint_y: None
+                        height: 40
+                        background_color: (0.3, 0.7, 0.9, 1)
+                        color: (1,1,1,1)
+                    Button:
+                        text: "Menu Item 3"
+                        size_hint_y: None
+                        height: 40
+                        background_color: (0.3, 0.7, 0.9, 1)
+                        color: (1,1,1,1)
+                    Button:
+                        text: "Menu Item 4"
+                        size_hint_y: None
+                        height: 40
+                        background_color: (0.3, 0.7, 0.9, 1)
+                        color: (1,1,1,1)
+                    Button:
+                        text: "Menu Item 5"
+                        size_hint_y: None
+                        height: 40
+                        background_color: (0.3, 0.7, 0.9, 1)
+                        color: (1,1,1,1)
+        
+        # --- Main Content Section ---
+        BoxLayout:
+            orientation: 'vertical'
+            padding: 5
+            spacing: 5
+            
+            # Use the custom GraphWithTitle widget
+            GraphWithTitle:
+                title: "T3"
+                graph_id: "t3_graph" # This will be the ID for the inner Graph
+                size_hint_y: 0.2
+            GraphWithTitle:
+                title: "T4"
+                graph_id: "t4_graph" # This will be the ID for the inner Graph
+                size_hint_y: 0.2
+            GraphWithTitle:
+                title: "O0"
+                graph_id: "o0_graph" # This will be the ID for the inner Graph
+                size_hint_y: 0.2
+            GraphWithTitle:
+                title: "O1"
+                graph_id: "o1_graph" # This will be the ID for the inner Graph
+                size_hint_y: 0.2
+            
