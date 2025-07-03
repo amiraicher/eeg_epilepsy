@@ -18,7 +18,6 @@
 # Define the custom GraphWithTitle widget
 <GraphWithTitle@BoxLayout>: # Inherit from BoxLayout
     title: '' # Define the title property
-    graph_id: '' # Define the graph_id property for the inner Graph
     
     orientation: 'horizontal'
     padding: 5
@@ -36,7 +35,7 @@
         bold: True
         background_color: 0.2, 0.2, 0.35, 1
     Graph:
-        id: root.ids[root.graph_id] if root.graph_id else None # Dynamically assign ID based on graph_id property
+        id: graph_obj
         size_hint_x: 0.8
         xlabel: 'Time (s)'
         ylabel: 'Amplitude'
@@ -47,8 +46,8 @@
         padding: '5dp'
         x_ticks_major: 1
         y_ticks_major: 0.1
-        xmin: 0
-        xmax: 15
+        xmin: self.xmin
+        xmax: self.xmax
         ymin: -1
         ymax: 1
         background_color: (0.1, 0.1, 0.1, 1) # Dark background for the graph
@@ -123,6 +122,7 @@
                     # Loop to create menu items
                     Button:
                         text: "Menu Item 1"
+                        id: "menu_item1"
                         size_hint_y: None
                         height: 40
                         background_color: (0.3, 0.7, 0.9, 1)
@@ -161,18 +161,18 @@
             # Use the custom GraphWithTitle widget
             GraphWithTitle:
                 title: "T3"
-                graph_id: "t3_graph" # This will be the ID for the inner Graph
+                id: t3_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             GraphWithTitle:
                 title: "T4"
-                graph_id: "t4_graph" # This will be the ID for the inner Graph
+                id: t4_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             GraphWithTitle:
                 title: "O0"
-                graph_id: "o0_graph" # This will be the ID for the inner Graph
+                id: o0_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             GraphWithTitle:
                 title: "O1"
-                graph_id: "o1_graph" # This will be the ID for the inner Graph
+                id: o1_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             

@@ -15,9 +15,10 @@ from kivy.properties import StringProperty, ListProperty, NumericProperty
 from neurosdk.scanner import Scanner
 from neurosdk.sensor import Sensor
 from neurosdk.cmn_types import SensorFamily
+import numpy as np
 import logging
 
-from kivy_garden.graph import Graph, MeshLinePlot # Import MeshLinePlot if you plan to add data to the graph
+from kivy_garden.graph import Graph, LinePlot # Import MeshLinePlot if you plan to add data to the graph
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -180,8 +181,23 @@ class WaitingForConnectionView(Screen):
 class SecondScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        
         # No UI elements defined here, they will be in the KV file
 
+    def on_enter(self, *args):
+        self.t3_x = np.arange(0,15,0.01)
+        self.t3_line = LinePlot(color=[0.2 , 0.7, 1, 1], line_width=1)
+        self.t3_line.points = [(x, np.sin(2*np.pi*5*x)) for x in self.t3_x]
+        self.ids.t3_graph.ids.graph_obj.add_plot(self.t3_line)
+        self.update_graph_event = Clock.schedule_interval(self.update_graph, 0.5)
+        
+    def update_graph(self, dt):
+        last_point = self.t3_line.points[-1]
+        self.t3_line.points.pop(0)
+        self.t3_line.points.append((last_point[0]+0.01, np.sin(2*np.pi*5*last_point[0]+0.01)))
+        self.ids.t3_graph.ids.graph_obj.xmin =float(self.t3_line.points[0][0])
+        self.ids.t3_graph.ids.graph_obj.xmax = float(self.t3_line.points[-1][0])
+        
 # Main application class
 class TwoScreenApp(App):
     def build(self):
