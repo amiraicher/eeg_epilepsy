@@ -45,11 +45,11 @@
         y_grid_label: True
         padding: '5dp'
         x_ticks_major: 1
-        y_ticks_major: 0.1
+        y_ticks_major: 0.001
         xmin: self.xmin
         xmax: self.xmax
-        ymin: -1
-        ymax: 1
+        ymin: 0
+        ymax: 0.5
         background_color: (0.1, 0.1, 0.1, 1) # Dark background for the graph
 
 # Define the WaitingForConnectionView (First Screen)
@@ -168,11 +168,11 @@
                 id: t4_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             GraphWithTitle:
-                title: "O0"
-                id: o0_graph # This will be the ID for the inner Graph
-                size_hint_y: 0.2
-            GraphWithTitle:
                 title: "O1"
                 id: o1_graph # This will be the ID for the inner Graph
+                size_hint_y: 0.2
+            GraphWithTitle:
+                title: "O2"
+                id: o2_graph # This will be the ID for the inner Graph
                 size_hint_y: 0.2
             

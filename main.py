@@ -13,10 +13,11 @@ from kivy.clock import Clock
 from kivy.properties import StringProperty, ListProperty, NumericProperty
 # Removed: from kivy.lang import Builder # No longer needed for auto-loading
 from neurosdk.scanner import Scanner
-from neurosdk.sensor import Sensor
+from neurosdk.sensor import Sensor, SensorCommand
 from neurosdk.cmn_types import SensorFamily
 import numpy as np
 import logging
+from functools import partial
 
 from kivy_garden.graph import Graph, LinePlot # Import MeshLinePlot if you plan to add data to the graph
 
@@ -33,6 +34,28 @@ class GraphWithTitle(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        x = np.arange(0,4,0.01)
+        self.line = LinePlot(color=[0.2 , 0.7, 1, 1], line_width=1)
+        self.line.points = [(x_, np.sin(2*np.pi*5*x_)) for x_ in x]
+        self.current_vals = np.array([[point[0], point[1]] for point in self.line.points])
+        self.sampling_time = 1/100
+        self.current_time = 0
+    
+    def on_kv_post(self, base_widget):
+        self.ids.graph_obj.add_plot(self.line)
+        return super().on_kv_post(base_widget)
+        
+        
+    def update_graph(self, val, *args):
+        self.line.points.pop(0)
+        self.current_vals[:-1] = self.current_vals[1:]
+        self.current_vals[-1] = np.array([self.current_time, val])
+        self.current_time += self.sampling_time
+        self.line.points.append((self.current_time, val))
+        self.ids.graph_obj.xmin =float(self.line.points[0][0])
+        self.ids.graph_obj.xmax = float(self.current_time)
+        self.ids.graph_obj.ymin =float(self.current_vals[:,1].min())
+        self.ids.graph_obj.ymax = float(self.current_vals[:,1].max())
         
 # Define a custom widget for a single circle
 class CircleWidget(Widget):
@@ -181,22 +204,29 @@ class WaitingForConnectionView(Screen):
 class SecondScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+        self.refresh_time = 0.001
+       
         # No UI elements defined here, they will be in the KV file
 
     def on_enter(self, *args):
-        self.t3_x = np.arange(0,15,0.01)
-        self.t3_line = LinePlot(color=[0.2 , 0.7, 1, 1], line_width=1)
-        self.t3_line.points = [(x, np.sin(2*np.pi*5*x)) for x in self.t3_x]
-        self.ids.t3_graph.ids.graph_obj.add_plot(self.t3_line)
-        self.update_graph_event = Clock.schedule_interval(self.update_graph, 0.5)
+        self.graph_dict = {
+            "O1": self.ids.o1_graph,
+            "O2": self.ids.o2_graph,
+            "T3": self.ids.t3_graph,
+            "T4": self.ids.t4_graph
+        }
+        sensor_sampling_time = 1/float(sensor.sampling_frequency.name.split("Hz")[1])
+        for graph in self.graph_dict.values():
+            graph.sampling_time = sensor_sampling_time
+        sensor.signalDataReceived = self.on_data_recived
+        sensor.exec_command(SensorCommand.StartSignal)
         
-    def update_graph(self, dt):
-        last_point = self.t3_line.points[-1]
-        self.t3_line.points.pop(0)
-        self.t3_line.points.append((last_point[0]+0.01, np.sin(2*np.pi*5*last_point[0]+0.01)))
-        self.ids.t3_graph.ids.graph_obj.xmin =float(self.t3_line.points[0][0])
-        self.ids.t3_graph.ids.graph_obj.xmax = float(self.t3_line.points[-1][0])
+    def on_data_recived(self, sensor, data):
+        for d in data:
+            Clock.schedule_once(partial(self.graph_dict["O1"].update_graph, d.O1))
+            Clock.schedule_once(partial(self.graph_dict["O2"].update_graph, d.O2))
+            Clock.schedule_once(partial(self.graph_dict["T3"].update_graph, d.T3))
+            Clock.schedule_once(partial(self.graph_dict["T4"].update_graph, d.T4))
         
 # Main application class
 class TwoScreenApp(App):
