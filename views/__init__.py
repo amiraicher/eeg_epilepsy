@@ -1,0 +1,2 @@
+from .main_view import MainView
+from .waiting_for_connection_view import WaitingForConnectionView
